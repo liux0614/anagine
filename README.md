@@ -1,4 +1,4 @@
-# Guppy
+# Anagine
 
 ### nvm, node and npm versions
 ```
@@ -70,3 +70,19 @@ The `/_version` endpoint yields version and commit information. This endpoint is
 ```
 {"version":"<version-string>","commit":"<commit-hash>"}
 ```
+
+
+### Ollama endpoint for Large Language Model (LLM)
+Download Ollama from ollama.com/download
+
+Download the LLM weights via 
+```
+ollama pull llama3.2:1b
+```
+
+Run LLM as endpoint via
+```
+ollama run llama3.2:1b
+```
+
+The LLM is served at localhost:11434

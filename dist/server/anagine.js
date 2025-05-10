@@ -6,20 +6,18 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+var _objectWithoutPropertiesLoose2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/objectWithoutPropertiesLoose"));
 var _stringify = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/json/stringify"));
 var _express = _interopRequireDefault(require("express"));
 var _child_process = require("child_process");
 var _logger = _interopRequireDefault(require("./logger"));
 var _config = _interopRequireDefault(require("./config"));
-const path = require('path');
+var _path = _interopRequireDefault(require("path"));
+const _excluded = ["model", "prompt", "stream"],
+  _excluded2 = ["model", "prompt", "stream"];
+const ollamaService = require('./utils/llm');
 const anagineRouter = _express.default.Router();
 anagineRouter.get('/hello', (req, res) => {
-  _logger.default.info('Hello World');
-  _logger.default.info(new Date().toLocaleString('en-US', {
-    dateStyle: 'full',
-    timeStyle: 'long',
-    timeZone: 'UTC'
-  }));
   res.send({
     text: "Hello World",
     time: new Date().toLocaleString('en-US', {
@@ -58,7 +56,7 @@ anagineRouter.get('/R/lm', (req, res) => {
     y: [3, 5, 7]
   };
   const inputJSON = (0, _stringify.default)(data);
-  const rScriptPath = path.join(__dirname, '../R/lm.R');
+  const rScriptPath = _path.default.join(__dirname, '../R/lm.R');
   _logger.default.info('rScriptPath:', rScriptPath);
   const rProcess = (0, _child_process.spawn)('Rscript', [rScriptPath, inputJSON]);
   let output = '';
@@ -95,5 +93,41 @@ anagineRouter.get('/R/lm', (req, res) => {
       res.status(500).send('Error parsing R script output.');
     }
   });
+});
+anagineRouter.get('/llm/chat', async (req, res) => {
+  const _req$query = req.query,
+    {
+      model = _config.default.ollamaConfig.model,
+      prompt,
+      stream = false
+    } = _req$query,
+    options = (0, _objectWithoutPropertiesLoose2.default)(_req$query, _excluded);
+  const messages = [{
+    role: 'user',
+    content: prompt || 'Hi, could you introduce yourself?'
+  }];
+  const llm_response = await ollamaService.chatWithModel(model, messages, stream, options);
+  res.send({
+    response: llm_response
+  });
+  return 0;
+});
+anagineRouter.get('/llm/generate', async (req, res) => {
+  const _req$query2 = req.query,
+    {
+      model = _config.default.ollamaConfig.model,
+      prompt,
+      stream = false
+    } = _req$query2,
+    options = (0, _objectWithoutPropertiesLoose2.default)(_req$query2, _excluded2);
+  const messages = [{
+    role: 'user',
+    content: prompt || 'Hi, could you introduce yourself?'
+  }];
+  const llm_response = await ollamaService.generateText(model, messages, stream, options);
+  res.send({
+    response: llm_response
+  });
+  return 0;
 });
 var _default = exports.default = anagineRouter;
